@@ -1,1 +1,25 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 40px;
+  background-color: #f9f9f9;
+}
+
+nav {
+  margin-bottom: 30px;
+}
+
+nav a {
+  margin-right: 15px;
+  text-decoration: none;
+  font-weight: bold;
+  color: #333;
+}
+
+nav a:hover {
+  color: #0077cc;
+}
+
+h1 {
+  color: #222;
+}
 
