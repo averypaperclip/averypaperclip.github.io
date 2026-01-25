@@ -1,25 +1,99 @@
-body {
-  font-family: Arial, sans-serif;
-  margin: 40px;
-  background-color: #f9f9f9;
+/* ===== Base Reset ===== */
+* {
+  box-sizing: border-box;
 }
 
+body {
+  margin: 0;
+  padding: 60px;
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+  background-color: #0b0b0b;
+  color: #f2f2f2;
+  line-height: 1.6;
+}
+
+/* ===== Navigation ===== */
 nav {
-  margin-bottom: 30px;
+  display: flex;
+  gap: 30px;
+  margin-bottom: 60px;
 }
 
 nav a {
-  margin-right: 15px;
+  color: #f2f2f2;
   text-decoration: none;
-  font-weight: bold;
-  color: #333;
+  font-weight: 500;
+  position: relative;
 }
 
-nav a:hover {
-  color: #0077cc;
+nav a::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 2px;
+  background: #c1121f;
+  left: 0;
+  bottom: -6px;
+  transition: width 0.3s ease;
 }
 
+nav a:hover::after {
+  width: 100%;
+}
+
+/* ===== Headings ===== */
 h1 {
-  color: #222;
+  font-size: 2.5rem;
+  margin-bottom: 20px;
 }
 
+h2 {
+  font-size: 1.4rem;
+  margin-top: 50px;
+  color: #c1121f;
+}
+
+/* ===== Text ===== */
+p {
+  max-width: 700px;
+  color: #d6d6d6;
+}
+
+/* ===== Lists ===== */
+ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+li {
+  margin-bottom: 10px;
+}
+
+/* ===== Links ===== */
+a {
+  color: #e63946;
+}
+
+a:hover {
+  color: #ff6b6b;
+}
+
+/* ===== Images ===== */
+img {
+  margin-top: 30px;
+  border-radius: 10px;
+  max-width: 220px;
+  display: block;
+}
+
+/* ===== Sections ===== */
+section {
+  margin-bottom: 80px;
+}
+
+/* ===== Subtle divider ===== */
+.divider {
+  height: 1px;
+  background-color: #222;
+  margin: 60px 0;
+}
