@@ -105,9 +105,9 @@ section {
   margin: 40px 0;
 }
 
-.image-row img {
-  width: 100%;
-  max-width: 220px;
-  border-radius: 10px;
-  object-fit: cover;
+.image-row {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin: 50px 0;
 }
