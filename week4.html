@@ -80,19 +80,11 @@
     #define PIN_HOUSE_LAMP     6 // white light
     #define PIN_LED_CUE        7 // red light
     #define PIN_REWARD         24 // green light
-    #define PIN_LICK_BOX	   26
-    #define PIN_IR_LED_TRIGGER 21
-    #define PIN_3_3            27
-    #define PIN_LICK_ECHO	   5
-    #define PIN_IR_LICK	   	   10
-    #define PIN_FIRST_LICK	   16 // Sends receipt of first lick -- used to halt stimulation 
-    
-    // PWM OUT --- n.b! 2 tones can't play at the same time!
+    #define PIN_LICK_BOX	   26 // detect button clicks
+    #define PIN_IR_LED_TRIGGER 21 // trigger led
+    #define PIN_3_3            27 // 3.3 V
     #define PIN_SPEAKER        22
-    
-    // Digital IN
-    #define PIN_CAMO           17
-    #define PIN_LICK           26
+    #define PIN_FIRST_LICK	   16 // Sends receipt of first lick 
   }
   </code></pre>
 
@@ -103,28 +95,23 @@
    <pre><code>
     void setup()
     {
-    	//--------------------I/O initialization------------------//
     	// OUTPUTS
     	pinMode(PIN_HOUSE_LAMP, OUTPUT);            // LED for illumination (trial cue)
     	pinMode(PIN_LED_CUE, OUTPUT);               // LED for 'start' cue
     	pinMode(PIN_SPEAKER, OUTPUT);               // Speaker for cue/correct/error tone
     	pinMode(PIN_REWARD, OUTPUT);                // Reward OUT
      	pinMode(PIN_TRIGGER, OUTPUT);               // Trigger OUT
-      pinMode(PIN_IR_LED_TRIGGER, OUTPUT);        	// IR LED Trigger
       pinMode(PIN_3_3, OUTPUT);                   	// A 3.3V src
       pinMode(PIN_LICK_ECHO, OUTPUT);				// Lick echo
       pinMode(PIN_FIRST_LICK, OUTPUT);				// Send first lick pulse
-      pinMode(PIN_CANCEL_CHR2, OUTPUT);				// Cancel ChR2 request
     	// INPUTS
     	pinMode(PIN_LICK, INPUT);                   // Lick detector
     	pinMode(PIN_CAMO, INPUT);					// Simply relays CamO to CED
-    	//--------------------------------------------------------//
-    
     }
   </code></pre>
     
   <p>
-    4. Main Loop utilizing state switching. (short example below)
+    4. Main Loop utilizing state switching.
   </p>
 
    <pre><code>
@@ -141,11 +128,26 @@
 			case INIT_TRIAL:
 				init_trial();
 				break;
+	   
+	   // and other state switching
     }
   </code></pre>
 
-  <p>5. Initialize, 6. States, 7. Transitions </p>
+  <p>5. Define functions for events and transitions </p>
 
+   <pre><code>
+	if (_state != _prevState) {                      // If ENTERTING PRE_WINDOW:
+			setCueLED(true);                                 // Cue LED ON
+			playSound(TONE_CUE);                             // Cue tone ON
+			_cue_on_time = signedMillis();                         // Start Cue ON timer
+			// Send event marker (cue_on) to HOST with timestamp
+			sendMessage("&" + String(EVENT_CUE_ON) + " " + String(signedMillis() - _exp_timer));
+			_prevState = _state;                                // Assign _prevState to PRE_WINDOW state
+			sendMessage("$" + String(_state));                  // Send HOST $3 (pre_window State)
+			if (_params[_DEBUG]) {sendMessage("Cue on. Lick accepted between " + String(_params[INTERVAL_MIN]) + " - " + String(_params[INTERVAL_MAX]) + " ms");} 
+		}
+  </code></pre>
+	  
   <a href="HamilosLabCode.ino.zip" download>
     Download "Hamilos Code" File
   </a>
@@ -154,8 +156,10 @@
   <h2> 4) The Final Product! </h2>
 
   <p>
-  After gluing together the components, tying the string, and recreating the longer bobbin, the design worked! It's finicky -- if I had more time, I would 1) 
-  make sure the strings don't get tangled, 2) make the "bobbin" more stable, and 3) paint my design!
+  After soldering the components (a few times), making the wiring diagram, and debugging the code (this took forever) -- my version finally worked! It is currently
+	  mounted on the wall at the lab, so I was unable to bring it to class, and if I were to revise this assignment I would build another version to display in class. Either way,
+	  the code works! I believe I have learned so much and am now able to demonstrate my knowledge in soldering and Arduino coding. See the video below for the examples of some
+	  cases: such as an early button click, a rewarded click, and a missed click.
   </p>
   </section>
 
