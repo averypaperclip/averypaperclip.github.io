@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Week 4</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-dots"></div>
+
+<nav>
+  <a href="index.html">Home</a>
+  <a href="about.html">About</a>
+  <a href="final-project.html">Final Project</a>
+</nav>
+
+<section>
+  <h1>Week 4: Microcontroller Programming</h1>
+  <h2>Background</h2>
+  
+  <section class="image-row">
+  <img src="Hamilos.png" alt="Timeline of One Trial">
+  <img src="Humandata.png" alt="Human behavior">
+  </section>
+  
+  <p>
+    As an undergraduate researcher at the Hamilos Lab, I wanted to take the behavior task we did with the mice and replicate it in humans. The task works like this... Rules:
+    the subject cannot know how the game works before hand; they are only told that they get a point when the light turns green. Strategy: there is a hidden reward interval when
+    the subject can press the button and recieve a reward tone and the green LED. If they press the button before or after this secret interval from 3.5-7 seconds then they will
+    get an early/late error tone. If they don't press at all they also get an error tone. Above: the timing of the behavior task (left) and some human results from when I was collecting
+    data with the arduino below (right).
+    
+  </p>
+
+<section>
+
+<section>
+  <h2>1) Sketching wiring diagram</h2>
+
+  <section class="image-row">
+  <img src="Wiringdiagram.png" alt="Wiring Diagram">
+  <img src="Wiringdiagrambutton.png" alt="Wiring Diagram">   
+  <img src="Bigredbutton.png" alt="Online Diagram Button">
+  </section>
+
+  <p>
+    I knew that I needed to have the following components: a push to break button, speaker, red LED, green LED, white LED, and of course wires/resistors/ground. Knowing I would want 
+    two bread boards to keep everything looking neat, I made the above wiring diagram (Left). I also knew that I wanted a large red button so I found the diagram for that (right).
+  </p>
+</section>
+
+<section>
+  <h2>2) Solder and wire together breadboards </h2>
+
+  <section class="image-row">
+  <img src="Firstattempt.png" alt="Project reference image 1">
+  <img src="Finalattempt.png" alt="Project reference image 1">
+  <img src="Buttonattempt.png" alt="Project reference image 1">
+  </section>
+
+  <p>
+    At first, I tried to make this work across three breadboards, but then I realized that the button would be attatched too closely to be moved. So I used two breadboards, the microcontroller
+    on one and the features (speaker, LEDs) on the other like my wiring diagram above. I learned how to solder and felt a lot more comfortable after soldering all the pins and the wires. 
+  </p>
+
+  <section>
+  <h2> 3) Coding Arduino </h2>
+    
+  <p>
+    My Principal Investigator, Allison Hamilos, came up with the idea for this project and the fundamentals of the arduino code. I was able to write and modify the code for my arduino with the following steps...
+  </p>
+
+  <p>
+    1. Define pins, states (using state switching in Arduino because of the nature of this task), event markers, resulting code, sound frequencies, and parameters/parameter IDs.
+  </p>
+
+   <pre><code>
+     // Digital OUT
+    #define PIN_HOUSE_LAMP     6 // white light
+    #define PIN_LED_CUE        7 // red light
+    #define PIN_REWARD         24 // green light
+    #define PIN_LICK_BOX	   26
+    #define PIN_IR_LED_TRIGGER 21
+    #define PIN_3_3            27
+    #define PIN_LICK_ECHO	   5
+    #define PIN_IR_LICK	   	   10
+    #define PIN_FIRST_LICK	   16 // Sends receipt of first lick -- used to halt stimulation 
+    
+    // PWM OUT --- n.b! 2 tones can't play at the same time!
+    #define PIN_SPEAKER        22
+    
+    // Digital IN
+    #define PIN_CAMO           17
+    #define PIN_LICK           26
+  }
+  </code></pre>
+
+  <p>
+    2. void Setup using pinMode.
+  </p>
+
+   <pre><code>
+    void setup()
+    {
+    	//--------------------I/O initialization------------------//
+    	// OUTPUTS
+    	pinMode(PIN_HOUSE_LAMP, OUTPUT);            // LED for illumination (trial cue)
+    	pinMode(PIN_LED_CUE, OUTPUT);               // LED for 'start' cue
+    	pinMode(PIN_SPEAKER, OUTPUT);               // Speaker for cue/correct/error tone
+    	pinMode(PIN_REWARD, OUTPUT);                // Reward OUT
+     	pinMode(PIN_TRIGGER, OUTPUT);               // Trigger OUT
+      pinMode(PIN_IR_LED_TRIGGER, OUTPUT);        	// IR LED Trigger
+      pinMode(PIN_3_3, OUTPUT);                   	// A 3.3V src
+      pinMode(PIN_LICK_ECHO, OUTPUT);				// Lick echo
+      pinMode(PIN_FIRST_LICK, OUTPUT);				// Send first lick pulse
+      pinMode(PIN_CANCEL_CHR2, OUTPUT);				// Cancel ChR2 request
+    	// INPUTS
+    	pinMode(PIN_LICK, INPUT);                   // Lick detector
+    	pinMode(PIN_CAMO, INPUT);					// Simply relays CamO to CED
+    	//--------------------------------------------------------//
+    
+    }
+  </code></pre>
+    
+  <p>
+    4. Main Loop utilizing state switching. (short example below)
+  </p>
+
+   <pre><code>
+    void setup()
+		switch (_state) {
+			case _INIT:
+				idle_state();
+				break;
+
+			case IDLE_STATE:
+				idle_state();
+				break;
+			
+			case INIT_TRIAL:
+				init_trial();
+				break;
+    }
+  </code></pre>
+
+  <p>5. Initialize, 6. States, 7. Transitions </p>
+
+  <a href="HamilosLabCode.ino.zip" download>
+    Download "Hamilos Code" File
+  </a>
+
+  <section>
+  <h2> 4) The Final Product! </h2>
+
+  <p>
+  After gluing together the components, tying the string, and recreating the longer bobbin, the design worked! It's finicky -- if I had more time, I would 1) 
+  make sure the strings don't get tangled, 2) make the "bobbin" more stable, and 3) paint my design!
+  </p>
+  </section>
+
+  <iframe 
+  width="560" 
+  height="315"
+  src="https://www.youtube.com/embed/TZSWpHMe4oc?start=111&end=150&autoplay=1&mute=1"
+  title="YouTube video player"
+  frameborder="0"
+  allow="autoplay; encrypted-media"
+  allowfullscreen>
+</iframe>
+
+</body>
+</html>
