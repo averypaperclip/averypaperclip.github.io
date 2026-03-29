@@ -36,7 +36,75 @@
     The simple circuit has a heart rate pulse sensor (that I re-soldered for stability) that interfaces with my computer through bluetooth. Then a readout appears on the digital interface.
   </p>
 
-  <!-- download arduino code> -->
+  <pre>
+    <code>
+      #include <Arduino.h>
+      #include <PulseSensorPlayground.h>
+      #include <BLEDevice.h>
+      #include <BLEUtils.h>
+      #include <BLEServer.h>
+      
+      #define SERVICE_UUID        "12345678-1234-1234-1234-123456789abc"
+      #define CHARACTERISTIC_UUID "abcdefab-1234-1234-1234-abcdefabcdef"
+      
+      const int PulseWire = D0;
+      int Threshold = 550;
+      
+      PulseSensorPlayground pulseSensor;
+      
+      BLECharacteristic *pCharacteristic;
+      bool deviceConnected = false;
+      
+      class MyServerCallbacks : public BLEServerCallbacks {
+        void onConnect(BLEServer* pServer) {
+          deviceConnected = true;
+        }
+        void onDisconnect(BLEServer* pServer) {
+          deviceConnected = false;
+        }
+      };
+      
+      void setup() {
+        Serial.begin(115200);
+      
+        // Pulse sensor
+        pulseSensor.analogInput(PulseWire);
+        pulseSensor.setThreshold(Threshold);
+        pulseSensor.begin();
+      
+        // BLE setup
+        BLEDevice::init("ESP32-Bagel");
+        BLEServer *pServer = BLEDevice::createServer();
+        pServer->setCallbacks(new MyServerCallbacks());
+      
+        BLEService *pService = pServer->createService(SERVICE_UUID);
+      
+        pCharacteristic = pService->createCharacteristic(
+                            CHARACTERISTIC_UUID,
+                            BLECharacteristic::PROPERTY_NOTIFY
+                          );
+      
+        pService->start();
+        pServer->getAdvertising()->start();
+      
+        Serial.println("BLE ready!");
+      }
+      
+      void loop() {
+        if (pulseSensor.sawStartOfBeat()) {
+          int bpm = pulseSensor.getBeatsPerMinute();
+          Serial.println(bpm);
+      
+          if (deviceConnected) {
+            char buffer[8];
+            sprintf(buffer, "%d", bpm);
+            pCharacteristic->setValue(buffer);
+            pCharacteristic->notify();
+          }
+        }
+      }
+    </code>
+  </pre>
 
 </section>
 
@@ -46,11 +114,11 @@
   <section class="image-row">
   <img src="Boxstl.png" alt="Project reference image 1">
   <img src="Lidstl.png" alt="Project reference image 2">
-  <img src="Final photo" alt="Project reference image 2">
+  <img src="Finalphoto.png" alt="Project reference image 2">
   </section>
 
   <p>
-    I found box and lid files from the internet and modified it to have a hold I can thread the pulse sensor through.
+    I found box and lid files from the internet and modified it to have a hold I can thread the pulse sensor through to 3d print. First, though I wanted to test out the measurements on a basic laser cutter cut, so I printed this to test how well it fits in one's hand.
   </p>
 
   <!-- Download Box file
