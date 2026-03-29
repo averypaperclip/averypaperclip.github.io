@@ -32,8 +32,9 @@
   <img src="Circuitschematic2.png" alt="Project reference image 2">
   </section>
 
-  <pre><code>
-      #include <Arduino.h>
+<pre>
+  <code>
+    #include <Arduino.h>
       #include <PulseSensorPlayground.h>
       #include <BLEDevice.h>
       #include <BLEUtils.h>
@@ -98,7 +99,8 @@
           }
         }
       }
-  </code></pre>
+  </code>
+</pre>   
 
   <p>
     The simple circuit has a heart rate pulse sensor (that I re-soldered for stability) that interfaces with my computer through bluetooth. Then a readout appears on the digital interface.
@@ -132,16 +134,24 @@
 <section>
   <h2>Digital Output</h2>
 
-  <section class="image-row">
-  <!-- Link to Youtube Video -->
-  </section>
+  <iframe 
+  width="560" 
+  height="315"
+  src="https://www.youtube.com/embed/lN44rlrtycI?autoplay=1&mute=1"
+  title="YouTube video player"
+  frameborder="0"
+  allow="autoplay; encrypted-media"
+  allowfullscreen>
+</iframe>
 
   <p>
     This is how the game works: 1) a question is shown (eventually planning to integrate an LLM to formulate questions), 2) two answers are shown, 3) to answer you must either do an exercise to raise heartrate or keep heartrate the same, 4) if you get it wrong it gets shuffled to the end of the queue.
   </p>
 
-  <!-- Download HTML file -->
-
+<a href="bagelindex.html" download>
+    Download HTML Game code
+  </a>
+  
 </section>
 
 </body>
