@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Heart Rate Bagel Game</title>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+</head>
+<body>
+
+<button onclick="connectBLE()" style="font-size:20px; padding:10px;">
+  Connect to Bagel 🥯
+</button>
+
+<script>
+let bpm = 70;
+let bagelState = "happy";
+let characteristic;
+
+// GAME STATE 
+let gameState = "question"; // question, exercise, result
+let selectedResponse = null;
+let countdown = 10;
+let exercise = "";
+let resultMessage = "";
+
+// BLE CONNECTION 
+async function connectBLE() {
+  const device = await navigator.bluetooth.requestDevice({
+    filters: [{ name: "ESP32-Bagel" }],
+    optionalServices: ["12345678-1234-1234-1234-123456789abc"]
+  });
+
+  const server = await device.gatt.connect();
+  const service = await server.getPrimaryService("12345678-1234-1234-1234-123456789abc");
+  characteristic = await service.getCharacteristic("abcdefab-1234-1234-1234-abcdefabcdef");
+
+  await characteristic.startNotifications();
+
+  characteristic.addEventListener('characteristicvaluechanged', (event) => {
+    let value = new TextDecoder().decode(event.target.value);
+    let val = parseInt(value);
+    if (!isNaN(val)) bpm = val;
+  });
+
+  console.log("Connected to bagel 🥯");
+}
+
+// P5 SETUP 
+function setup() {
+  createCanvas(window.innerWidth, window.innerHeight);
+  textAlign(CENTER, CENTER);
+  textSize(28);
+}
+
+// DRAW LOOP
+function draw() {
+  background(245, 220, 180);
+
+  drawBagel();
+
+  fill(0);
+
+  if (gameState === "question") {
+    text("What is the definition of this word?", width/2, 100);
+
+    drawButton("Response One", width/2 - 150, height/2 + 150, () => selectResponse(1));
+    drawButton("Response Two", width/2 + 150, height/2 + 150, () => selectResponse(2));
+  }
+
+  if (gameState === "exercise") {
+    text("DO THIS:", width/2, 80);
+
+    if (selectedResponse === 1) {
+      text(exercise, width/2, 120);
+    } else {
+      text("Stay completely still 🧘", width/2, 120);
+    }
+
+    text("Time left: " + countdown, width/2, 180);
+
+    if (frameCount % 60 === 0 && countdown > 0) {
+      countdown--;
+    }
+
+    if (countdown === 0) {
+      evaluateResult();
+    }
+  }
+
+  if (gameState === "result") {
+    text(resultMessage, width/2, height/2);
+    text("BPM: " + bpm, width/2, height/2 + 50);
+
+    drawButton("Play Again", width/2, height/2 + 120, resetGame);
+  }
+
+  text("BPM: " + bpm, width/2, height - 50);
+}
+
+// BUTTON
+function drawButton(label, x, y, action) {
+  rectMode(CENTER);
+  fill(255);
+  rect(x, y, 200, 60, 10);
+
+  fill(0);
+  text(label, x, y);
+
+  if (mouseIsPressed &&
+      mouseX > x - 100 && mouseX < x + 100 &&
+      mouseY > y - 30 && mouseY < y + 30) {
+    action();
+  }
+}
+
+// GAME LOGIC
+function selectResponse(choice) {
+  selectedResponse = choice;
+
+  if (choice === 1) {
+    exercise = random([
+      "5 Push Ups 💪",
+      "10 Jumping Jacks 🏃",
+      "3 Burpees 🔥"
+    ]);
+  }
+
+  countdown = 10;
+  gameState = "exercise";
+}
+
+function evaluateResult() {
+  if (selectedResponse === 1) {
+    if (bpm > 100) {
+      resultMessage = "Correct! You got your heart rate up 🎉";
+    } else {
+      resultMessage = "Wrong! You didn't push hard enough 😤";
+    }
+  } else {
+    if (bpm < 100) {
+      resultMessage = "Correct! You stayed calm 🧘";
+    } else {
+      resultMessage = "Wrong! Your heart rate increased 👀";
+    }
+  }
+
+  gameState = "result";
+}
+
+function resetGame() {
+  gameState = "question";
+  selectedResponse = null;
+  countdown = 10;
+  exercise = "";
+  resultMessage = "";
+}
+
+//BAGEL DRAW 
+function drawBagel() {
+  push();
+  translate(width/2, height/2);
+
+  fill(222, 184, 135);
+  noStroke();
+  ellipse(0, 0, 220, 220);
+
+  fill(245, 220, 180);
+  ellipse(0, 0, 100, 100);
+
+  // eyes
+  fill(255);
+  ellipse(-40, -30, 20);
+  ellipse(40, -30, 20);
+
+  fill(0);
+  ellipse(-40, -30, 10);
+  ellipse(40, -30, 10);
+
+  pop();
+}
+</script>
+
+</body>
+</html>
