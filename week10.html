@@ -66,9 +66,13 @@
 
   <pre>
   <code>
-    function helloWorld() {
-      console.log("Hello, world!");
-    }
+    void loop() {
+  serviceSerial();
+  processHoming();
+  scheduleClockIfNeeded();
+  executeNextCommandIfReady();
+  runSteppers();
+  }
   </code>
 </pre>
 
@@ -77,7 +81,7 @@
   </p>
 
   <p>
-  <a href="clockcode.ino" download class="download-button">
+  <a href="finalClockDraw.ino" download class="download-button">
   Download Code
   </a>
   </p>
@@ -88,7 +92,7 @@
   <h2>Final Videos</h2>
 
   <p>
-    Finally, we put it all together! We constructed the base, assembled the machine, put together the circuit, uploaded the code and tested! 
+    Finally, we put it all together! We constructed the base, assembled the machine, put together the circuit, uploaded the code and tested! At first we only saw the pen drawing a line over and over again, but with Jolana and Marc's diligent problem solving, it now works!!
   </p>
 
   <!-- first video normal speed -->
@@ -104,16 +108,15 @@
 </iframe>
 
   <!-- second video time lapse -->
-<iframe 
-  width="560" 
-  height="315" 
-  src="https://www.youtube.com/embed/VIDEO_ID" 
-  title="YouTube video player" 
-  frameborder="0" 
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-  referrerpolicy="strict-origin-when-cross-origin" 
-  allowfullscreen>
-</iframe>
+<video width="640" height="360" controls>
+  <source src="IMG_0669.mov" type="video/quicktime">
+  Your browser does not support the video tag.
+</video>
+
+<video width="640" height="360" controls>
+  <source src="IMG_0667.mov" type="video/quicktime">
+  Your browser does not support the video tag.
+</video>
 
 </section> 
 
