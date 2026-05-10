@@ -38,19 +38,16 @@
   <h2>Circuit</h2>
 
   <section class="image-row">
-  <img src="EEGboard.png" alt="Project reference image 1">
-  <img src="EEGdrawing.png" alt="Project reference image 1">
-  <img src="EEGheart.png" alt="Project reference image 1"> 
+  <img src="adjustedboard.png" width="200">
+  <img src="handdrawncircuit.png" width="400">
+  <img src="setup.png" width="400"> 
+  <img src="chart.png" width="400"> 
   </section>
     
   <p>
-    The first step is to properly wire up the circuit based on some <a href="https://www.instructables.com/Wink-Detector/" /a>initial instructions available here</a>. It requires modifying a heart rate board, so that
-    instead of reading one signal (like EKG) it takes and compares two signals (like EEG). This also requires integrating real electrodes on a headband and adding a battery so that the computer doesn't create more noise.
-  </p>
-
-  <p>
-  Materials: 1 only AD8232 ECG heart monitor module, 1 only Arduino Uno R3, 1 only LM324 quad-op-amp, 1 only 220K ohm resistor 1/8 watt, 2 only 120K ohm resistors 1/8 watt, 1 only 15K ohm resistor 1/8 watt, 2 only 10K ohm resistors 1/8 watt, 1 only 1200 ohm resistor 1/8 watt, boards wires headbands
-  </p>
+    The first step is to properly wire up the circuit based on some <a href="https://www.instructables.com/Wink-Detector/">initial instructions available here</a>. It requires modifying a heart rate board, seen above, which joins and disrupts some connections.
+    Then the EEG can compare between two electrodes, and be ready to record from the occipital lobe (where vision takes place on the back of the head), as seen in the diagram above. Then I soldered the wires
+    to metal and sewed it to the headband. I was able to do some preliminary recordings which can be seen in the chart.
 
 </section>
 
@@ -74,9 +71,23 @@
 </pre>
 
   <p>
-    Above is some initial code from the website that will provide a good starting point, but much more signal denoising is needed. I will need to 1 - define pins, 2 - refine a digital interface, and 3 - work on additional components.
-    Additional components include adding a Butterworth notch filter to get rid of 60hz noise from the computer and integrating a Mortlet Wave Transform to be able to read EEG data.
+    I used the website/Kassia's code as a starting point and added a function to take the relative power, comparing signals to one another. 
+    Once I got that working, I added bluetooth to the arduino so that the noise from the computer wouldn't interfere. I was able to get the bluetooth to connect to my website:
+    arduino file to set up the serial print, python EEGserver.py in terminal to set up connection, and then using html go to http://localhost:8000/index.html. Select the device starting with "15:58" to connect to ESP-32! 
+    *EDITED HTML TO TRY STUFF, LOOK AT CONSOLE TO SEE WHERE DATA TRANSFER FAILING. 
   </p>
+
+  <a href="EEG.ino" download="EEG.ino">
+  <button type="button">Download Arduino</button>
+  </a>
+
+  <a href="EEGserver.py" download="EEGserver.py">
+  <button type="button">Download Python</button>
+  </a>
+
+  <a href="EEGindex.html" download="EEGindex.html">
+  <button type="button">Download HTML</button>
+  </a>
   
 </section>
 
