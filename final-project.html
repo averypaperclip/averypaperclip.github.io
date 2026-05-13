@@ -32,7 +32,7 @@
   <p> From the beginning, I was excited to create my own version of a brain-computer interface (BCI) - see my <a href="https://averypaperclip.github.io/week1.html">initial ideas </a>. 
     I started off by creating a heart rate monitor with a digital interface as a proof of concept - see <a href="https://averypaperclip.github.io/week7.html">my Minimum Viable Product </a> and <a href="https://hannahbrave.github.io/PS70-Assignments/09_networking/index.html">bluetooth improvement.</a> 
     After succeeding, I worked with Kassia Love to custom-build an EEG BCI designed to detect electrical activity from the scalp, amplify and filter the signal, and stream data to a computer for visualization and analysis <a href="https://averypaperclip.github.io/week11.html">(see details here)</a>. 
-    We did this through modifying a heart rate monitor and detecting when eyes are open versus closed! *EDIT VIDEO ABOVE </p>
+    We did this through modifying a heart rate monitor and detecting when eyes are open versus closed! </p>
 
 <section>
   <h2>Circuit</h2>
@@ -52,7 +52,7 @@
 </section>
 
 <section>
-  <h2>Code and Signal Denoising**</h2>
+  <h2>Code and Signal Denoising</h2>
 
   <pre>
   <code>
@@ -77,23 +77,23 @@
     arduino file to set up the serial print, python EEGserver.py in terminal to set up connection, and then using html go to the index. The website displayed the raw signal, which is easiest to see changes in, in addition to alpha/beta/delta/gamma/theta. 
     Problems arised (trying to train a model to predict eyes open versus closed & very noisy data), but we were ultimately able to see small differences and record actual data! To run 1) upload arduino, 2) run python server, 3) double click index file to bring up website page.
 
-  <a href="sketch_may10a.ino" download>
+    <ul>
+  <li><a href="sketch_may10a.ino" download>
     Download Blink Detector Arduino File
-  </a>
-
-  <a href="EEGserver.py" download>
+  </a></li>
+  <li><a href="EEGserver.py" download>
     Download Python Server File
-  </a>
-
-  <a href="EEGindex.html" download>
+  </a></li>
+  <li><a href="EEGindex.html" download>
     Download HTML File
-  </a>
+  </a></li>
+</ul>
   
 </section>
 
 <section>
 
-  <h2>Housing and Final Touches**</h2>
+  <h2>Housing and Final Touches</h2>
 
    <section class="image-row">
   <img src="headbandmaterials.png" width="400">
@@ -102,7 +102,7 @@
   </section>
 
   <p>
-    Finally after getting a working version via bluetooth, I miniturized by soldering the heart rate monitor, lipboattery, and chip on a protoboard
+    Finally after getting a working version via bluetooth, I miniturized by soldering the heart rate monitor, lipobattery, and ESP32 on a protoboard.
     I sewed a small pouch onto the headband, in addition to sewing rivets and the wires to be hidden. This way, the headband connects via bluetooth with no additional bulky parts.
   </p>
   
