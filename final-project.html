@@ -56,42 +56,44 @@
 
   <pre>
   <code>
-    // ----- Definitions
-    #define OPEN LOW                        // Comparator output is LOW when eye is open
-    #define CLOSED HIGH                     // Comparator output is HIGH when eye is closed
-    #define ON HIGH                         // Comparator output is LOW when eye is open
-    #define OFF LOW                         // Comparator output is HIGH when eye is closed
-    
-    // ----- Wiring
-    const byte LeftEye = 4;                 // Comparator output for left eye on pin D4
-    const byte RightEye = 5;                // Comparator output for right eye on pin D5
-    const byte LeftLed = 6;                 // LED for left eye connected to pin D6
-    const byte RightLed = 7;                // LED for right eye connected to pin D7
+  float rawMv = (float)vReal[SAMPLES - 1];
+
+  // --------- FFT + INSTANT BAND POWERS ---------
+  FFT.windowing(FFTWindow::Hamming, FFTDirection::Forward);
+  FFT.compute(FFTDirection::Forward);
+  FFT.complexToMagnitude();
+
+  deltaBP = bandPower(DELTA_LOW,  DELTA_HIGH);
+  thetaBP = bandPower(THETA_LOW,  THETA_HIGH);
+  alphaBP = bandPower(ALPHA_LOW,  ALPHA_HIGH);
+  betaBP  = bandPower(BETA_LOW,   BETA_HIGH);
+  gammaBP = bandPower(GAMMA_LOW,  GAMMA_HIGH);
   </code>
 </pre>
 
   <p>
     I used the website/Kassia's code as a starting point. 
     Once I got serial print to print signals working, I added bluetooth to the arduino so that the noise from the computer wouldn't interfere. I was able to get the bluetooth to connect to my website:
-    arduino file to set up the serial print, python EEGserver.py in terminal to set up connection, and then using html go to the index. *SIGNAL PROCESSING*
+    arduino file to set up the serial print, python EEGserver.py in terminal to set up connection, and then using html go to the index. The website displayed the raw signal, which is easiest to see changes in, in addition to alpha/beta/delta/gamma/theta. 
+    Problems arised (trying to train a model to predict eyes open versus closed & very noisy data), but we were ultimately able to see small differences and record actual data! To run 1) upload arduino, 2) run python server, 3) double click index file to bring up website page.
 
-  <a href="EEG.ino" download="EEG.ino">
-  <button type="button">Download Arduino</button>
+  <a href="sketch_may10a.ino" download>
+    Download Blink Detector Arduino File
   </a>
 
-  <a href="EEGserver.py" download="EEGserver.py">
-  <button type="button">Download Python</button>
+  <a href="EEGserver.py" download>
+    Download Python Server File
   </a>
 
-  <a href="EEGindex.html" download="EEGindex.html">
-  <button type="button">Download HTML</button>
+  <a href="EEGindex.html" download>
+    Download HTML File
   </a>
   
 </section>
 
 <section>
 
-  <h2>Final Touches**</h2>
+  <h2>Housing and Final Touches**</h2>
 
    <section class="image-row">
   <img src="EEGHeadband.png" alt="Project reference image 1">
