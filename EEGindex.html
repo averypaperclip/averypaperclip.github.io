@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>🐝 Behavioral ElectroEncephologram (B-EEG) 🐝</title>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+      font-family: sans-serif;
+      color: #fff;
+    }
+    canvas {
+      display: block;
+    }
+    .controls {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 6px 8px;
+      border-radius: 6px;
+    }
+
+    .controls button {
+      padding: 4px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(30,30,30,0.9);
+      color: #fff;
+      font-weight: 600;
+      background: linear-gradient(135deg, #ffd700, #ffae00);
+      border-color: rgba(255,255,255,0.4);
+      color: #000;
+    }
+
+    .info-label {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      padding: 4px 8px;
+      background: rgba(0,0,0,0.6);
+      border-radius: 4px;
+      font-size: 13px;
+      max-width: 60vw;
+      line-height: 1.3;
+    }
+  </style>
+</head>
+<body>
+
+<div class="controls">
+  <button id="btnExportCsv">Export CSV</button>
+</div>
+
+<div class="info-label" id="statusLabel">
+  WS: connecting... | Samples: 0
+</div>
+
+<script>
+let rawMv = 0;
+let delta = 0, theta = 0, alpha = 0, beta = 0, gamma = 0;
+
+const maxSamples = 100000;       // limit history size for drawing
+const displayWindowSec = 20;     // how many seconds of data to show
+
+let wsStatus = "connecting...";
+let sampleCount = 0;
+
+// histories (for drawing)
+let timeHistory  = [];
+let rawHistory   = [];
+let deltaHistory = [];
+let thetaHistory = [];
+let alphaHistory = [];
+let betaHistory  = [];
+let gammaHistory = [];
+
+// full log for CSV export
+let allSamples = []; // { t, rawMv, delta, theta, alpha, beta, gamma }
+
+let startTime = null;
+
+// -------- WebSocket --------
+
+function connectWS() {
+  const ws = new WebSocket("ws://localhost:8765");
+
+  ws.onopen = () => {
+    console.log("WS connected");
+    wsStatus = "connected";
+    updateStatusLabel();
+  };
+
+  ws.onmessage = (event) => {
+    const parts = event.data.split(",").map(Number);
+    if (parts.length === 6 && !parts.some(isNaN)) {
+      [rawMv, delta, theta, alpha, beta, gamma] = parts;
+
+      const t = Date.now();
+      if (startTime === null) startTime = t;
+
+      sampleCount++;
+
+      // full log for CSV
+      allSamples.push({ t, rawMv, delta, theta, alpha, beta, gamma });
+
+      // histories for drawing
+      pushLimited(timeHistory,  t,     maxSamples);
+      pushLimited(rawHistory,   rawMv, maxSamples);
+      pushLimited(deltaHistory, delta, maxSamples);
+      pushLimited(thetaHistory, theta, maxSamples);
+      pushLimited(alphaHistory, alpha, maxSamples);
+      pushLimited(betaHistory,  beta,  maxSamples);
+      pushLimited(gammaHistory, gamma, maxSamples);
+
+      updateStatusLabel();
+    } else {
+      console.warn("Bad WS data:", event.data);
+    }
+  };
+
+  ws.onclose = () => {
+    console.log("WS closed, retrying in 2s");
+    wsStatus = "disconnected, retrying...";
+    updateStatusLabel();
+    setTimeout(connectWS, 2000);
+  };
+
+  ws.onerror = (e) => {
+    console.log("WS error:", e);
+  };
+}
+
+function pushLimited(arr, v, limit) {
+  arr.push(v);
+  if (arr.length > limit) arr.shift();
+}
+
+connectWS();
+
+// -------- Helpers --------
+
+function updateStatusLabel() {
+  const label = document.getElementById("statusLabel");
+  label.textContent = `WS: ${wsStatus} | Samples: ${sampleCount} | raw≈${rawMv.toFixed(2)} mV`;
+}
+
+function mean(arr) {
+  if (arr.length === 0) return 0;
+  let s = 0;
+  for (const v of arr) s += v;
+  return s / arr.length;
+}
+
+function getMinMaxWithPadding(arr, fallbackMin, fallbackMax) {
+  if (!arr || arr.length === 0) return { min: fallbackMin, max: fallbackMax };
+
+  let minV = arr[0];
+  let maxV = arr[0];
+  for (let i = 1; i < arr.length; i++) {
+    const v = arr[i];
+    if (v < minV) minV = v;
+    if (v > maxV) maxV = v;
+  }
+
+  let range = maxV - minV;
+  if (range === 0) {
+    const pad = Math.max(Math.abs(maxV) * 0.1, 0.1);
+    minV -= pad;
+    maxV += pad;
+  } else {
+    const pad = range * 0.1;
+    minV -= pad;
+    maxV += pad;
+  }
+  return { min: minV, max: maxV };
+}
+
+function getRecentRangeIndices(seconds) {
+  const n = timeHistory.length;
+  if (n === 0) return [0, 0];
+
+  const now = timeHistory[n - 1];
+  const cutoff = now - seconds * 1000;
+
+  let startIdx = 0;
+  while (startIdx < n && timeHistory[startIdx] < cutoff) {
+    startIdx++;
+  }
+  return [startIdx, n];
+}
+
+function exportCsv() {
+  if (allSamples.length === 0) {
+    alert("No data recorded yet.");
+    return;
+  }
+
+  let lines = [];
+  lines.push("timestamp_ms,elapsed_s,rawMv,delta,theta,alpha,beta,gamma");
+
+  const t0 = allSamples[0].t;
+  for (const s of allSamples) {
+    const elapsed = (s.t - t0) / 1000;
+    lines.push([
+      s.t,
+      elapsed.toFixed(3),
+      s.rawMv.toFixed(4),
+      s.delta.toFixed(4),
+      s.theta.toFixed(4),
+      s.alpha.toFixed(4),
+      s.beta.toFixed(4),
+      s.gamma.toFixed(4)
+    ].join(","));
+  }
+
+  const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  const dateStr = new Date().toISOString().replace(/[:.]/g, "-");
+  a.download = `beeeg_${dateStr}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// -------- UI / Buttons --------
+
+function setupButtons() {
+  document.getElementById("btnExportCsv").onclick = exportCsv;
+}
+
+// -------- p5 setup/draw --------
+
+function setup() {
+  createCanvas(window.innerWidth, window.innerHeight);
+  textAlign(LEFT, TOP);
+  textSize(14);
+  smooth();
+
+  setupButtons();
+  updateStatusLabel();
+}
+
+function draw() {
+  background(0);
+
+  // Title + WS status + current values
+  noStroke();
+  fill(255);
+  textAlign(LEFT, TOP);
+
+  textSize(26);
+  text(`🐝 Behavioral ElectroEncephologram (B-EEG)`, 10, 6);
+
+  textSize(13);
+  text(`WS: ${wsStatus}`, 10, 36);
+
+  textSize(14);
+  let yLine = 54;
+  const lineStep = 16;
+  text(`raw mV: ${rawMv.toFixed(2)}`, 10, yLine); yLine += lineStep;
+  text(`delta:  ${delta.toFixed(2)}`, 10, yLine); yLine += lineStep;
+  text(`theta:  ${theta.toFixed(2)}`, 10, yLine); yLine += lineStep;
+  text(`alpha:  ${alpha.toFixed(2)}`, 10, yLine); yLine += lineStep;
+  text(`beta:   ${beta.toFixed(2)}`, 10, yLine); yLine += lineStep;
+  text(`gamma:  ${gamma.toFixed(2)}`, 10, yLine); yLine += lineStep;
+
+  // Layout
+  const rawPanelTop    = yLine + 10;
+  const rawPanelHeight = height * 0.35;   // big RAW panel
+  const smallPanelsTop = rawPanelTop + rawPanelHeight + 10;
+  const bottomMargin   = 10;
+
+  if (timeHistory.length < 2) return;
+
+  const [visStart, visEnd] = getRecentRangeIndices(displayWindowSec);
+
+  // RAW panel (largest)
+  const rawSlice = rawHistory.slice(visStart, visEnd);
+  const rawRange = getMinMaxWithPadding(rawSlice, -300, 300); // adjust if needed
+  drawBandWithAxis(
+    rawSlice,
+    rawPanelTop,
+    rawPanelHeight,
+    color(255, 223, 0),
+    "raw mV",
+    rawRange.min,
+    rawRange.max,
+    visStart,
+    visEnd
+  );
+
+  // Small panels for other bands
+  const smallSignals = [
+    { label: "delta",  history: deltaHistory, color: color(0, 150, 255), fallbackMin: 0, fallbackMax: 1 },
+    { label: "theta",  history: thetaHistory, color: color(255,150, 0),  fallbackMin: 0, fallbackMax: 1 },
+    { label: "alpha",  history: alphaHistory, color: color(200, 0, 255), fallbackMin: 0, fallbackMax: 1 },
+    { label: "beta",   history: betaHistory,  color: color(255,255, 0),  fallbackMin: 0, fallbackMax: 1 },
+    { label: "gamma",  history: gammaHistory, color: color(255, 0, 0),   fallbackMin: 0, fallbackMax: 1 },
+  ];
+
+  const nSmall = smallSignals.length;
+  const availableHeight = height - smallPanelsTop - bottomMargin;
+  const baseSmallHeight = nSmall > 0 ? availableHeight / nSmall : 0;
+  let yCursor = smallPanelsTop;
+
+  for (let i = 0; i < nSmall; i++) {
+    const sig = smallSignals[i];
+    const slice = sig.history.slice(visStart, visEnd);
+
+    let h = baseSmallHeight;
+
+    // Enlarge this panel when hovered
+    const mouseOver =
+      mouseX >= 0 && mouseX <= width &&
+      mouseY >= yCursor && mouseY <= yCursor + h;
+
+    if (mouseOver) {
+      h *= 1.6; // adjust factor as you like (1.5–2.0)
+    }
+
+    const range = getMinMaxWithPadding(slice, sig.fallbackMin, sig.fallbackMax);
+
+    drawBandWithAxis(
+      slice,
+      yCursor,
+      h,
+      sig.color,
+      sig.label,
+      range.min,
+      range.max,
+      visStart,
+      visEnd
+    );
+
+    yCursor += h + 4;
+  }
+}
+
+// -------- drawing helpers --------
+
+function drawBandWithAxis(arr, yTop, h, col, label, minVal, maxVal, visStartIdx, visEndIdx) {
+  const yBottom = yTop + h;
+  const axisHeight = 18;
+  const graphBottom = yBottom - axisHeight;
+
+  // Background
+  noStroke();
+  fill(15);
+  rect(0, yTop, width, h);
+
+  // Label
+  fill(200);
+  textAlign(LEFT, TOP);
+  textSize(14);
+  text(label, 10, yTop + 4);
+
+  if (arr.length >= 2) {
+    // Midline
+    stroke(60);
+    const midY = (yTop + graphBottom) / 2;
+    line(0, midY, width, midY);
+
+    // Signal
+    stroke(col);
+    strokeWeight(2);
+    noFill();
+    const n = arr.length;
+
+    beginShape();
+    for (let pass = -1; pass <= n; pass++) {
+      let i = pass;
+      if (i < 0) i = 0;
+      if (i >= n) i = n - 1;
+
+      const x = map(i, 0, n - 1, 0, width);
+      const y = map(arr[i], minVal, maxVal, graphBottom - 6, yTop + 20);
+      curveVertex(x, y);
+    }
+    endShape();
+  }
+
+  drawTimeAxisSegment(graphBottom, yBottom, visStartIdx, visEndIdx);
+}
+
+function drawTimeAxisSegment(axisTop, axisBottom, visStartIdx, visEndIdx) {
+  const n = timeHistory.length;
+  if (n < 2 || visEndIdx - visStartIdx < 2) return;
+
+  const tStart = timeHistory[visStartIdx];
+  const tEnd   = timeHistory[visEndIdx - 1];
+  const spanMs = tEnd - tStart;
+  if (spanMs <= 0) return;
+
+  noStroke();
+  fill(10);
+  rect(0, axisTop, width, axisBottom - axisTop);
+
+  stroke(80);
+  line(0, axisTop, width, axisTop);
+
+  const spanSec = spanMs / 1000;
+  let tickSec;
+  if (spanSec <= 5)        tickSec = 1;
+  else if (spanSec <= 10)  tickSec = 2;
+  else if (spanSec <= 30)  tickSec = 5;
+  else if (spanSec <= 60)  tickSec = 10;
+  else if (spanSec <= 120) tickSec = 20;
+  else                     tickSec = 30;
+
+  fill(180);
+  textAlign(CENTER, TOP);
+  textSize(11);
+
+  const firstTickSec = Math.ceil((tStart / 1000) / tickSec) * tickSec;
+
+  for (let ts = firstTickSec; ts * 1000 <= tEnd; ts += tickSec) {
+    const tMs = ts * 1000;
+    const x = map(tMs, tStart, tEnd, 0, width);
+
+    stroke(100);
+    line(x, axisTop, x, axisTop + 5);
+
+    const relSec = (tMs - startTime) / 1000;
+    const label = formatTime(relSec);
+    noStroke();
+    text(label, x, axisTop + 4);
+  }
+
+  textAlign(LEFT, TOP);
+  textSize(14);
+}
+
+function formatTime(totalSeconds) {
+  const m = Math.floor(totalSeconds / 60);
+  const s = Math.floor(totalSeconds % 60);
+  const mm = nf(m, 2);
+  const ss = nf(s, 2);
+  return mm + ":" + ss;
+}
+
+function windowResized() {
+  resizeCanvas(window.innerWidth, window.innerHeight);
+}
+</script>
+</body>
+</html>
