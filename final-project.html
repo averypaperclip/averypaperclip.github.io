@@ -28,17 +28,53 @@
     allowfullscreen>
   </iframe>
 
-  <h2>Introduction</h2>
+  <h2>Introduction & MVP</h2>
   <p> From the beginning, I was excited to create my own version of a brain-computer interface (BCI) - see my <a href="https://averypaperclip.github.io/week1.html">initial ideas </a>. 
     I started off by creating a heart rate monitor with a digital interface as a proof of concept - see <a href="https://averypaperclip.github.io/week7.html">my Minimum Viable Product </a> and <a href="https://hannahbrave.github.io/PS70-Assignments/09_networking/index.html">bluetooth improvement.</a> 
     After succeeding, I worked with Kassia Love to custom-build an EEG BCI designed to detect electrical activity from the scalp, amplify and filter the signal, and stream data to a computer for visualization and analysis <a href="https://averypaperclip.github.io/week11.html">(see details here)</a>. 
-    We did this through modifying a heart rate monitor and detecting when eyes are open versus closed! </p>
+    We did this through modifying a heart rate monitor and detecting when eyes are open versus closed! See my video of inspiration below for my EEG: </p>
+
+  <section class="image-row">
+  <img src="Circuitphoto1.png" alt="Project reference image 1">
+  <img src="Circuitschematic2.png" alt="Project reference image 2">
+  <img src="Boxstl.png" alt="Project reference image 1">
+  </section>
+
+  <code>
+  void loop() {
+        if (pulseSensor.sawStartOfBeat()) {
+          int bpm = pulseSensor.getBeatsPerMinute();
+          Serial.println(bpm);
+      
+          if (deviceConnected) {
+            char buffer[8];
+            sprintf(buffer, "%d", bpm);
+            pCharacteristic->setValue(buffer);
+            pCharacteristic->notify();
+          }
+        }
+      }
+  </code>
+
+  <iframe 
+    width="560" 
+    height="315"
+    src="https://www.youtube.com/embed/LYcITvxYB1I?start=111&end=150&autoplay=1&mute=1"
+    title="YouTube video player"
+    frameborder="0"
+    allow="autoplay; encrypted-media"
+    allowfullscreen>
+  </iframe>
 
 <section>
   <h2>Circuit</h2>
 
   <section class="image-row">
   <img src="adjustedboard.png" width="200">
+  <img src="modifications.png" width="200">
+  </section>
+
+  <section class="image-row">
   <img src="handdrawncircuit.png" width="400">
   <img src="setup.png" width="400"> 
   <img src="chart.png" width="400"> 
@@ -49,10 +85,22 @@
     Then the EEG can compare between two electrodes, and be ready to record from the occipital lobe (where vision takes place on the back of the head), as seen in the diagram above. Then I soldered the wires
     to metal and sewed it to the headband. I was able to do some preliminary recordings which can be seen in the chart.
 
+    <ol>
+    <li>Aquire materials: headband, heartrate monitor, breadboard, rivets, wires</li>
+    <li>Modify heartrate monitor: solder to join/short/cut, and test with multimeter to make sure it is correct </li>
+    <li>Additional components: add ESP32 to breadboard and sew rivets into headband to start recording activity with ground electrode on neck</li>
+    <li>Basic arduino code: upload to see raw signals for all the different waves and make sure serial print is working </li>
+    <li>Export and make graphs: to see what differences are between different bands and if there is a difference between eyes open/closed </li>
+  </ol>
+
 </section>
 
 <section>
   <h2>Code and Signal Denoising</h2>
+
+  <section class="image-row">
+  <img src="screen.png" width="400">
+  </section>
 
   <pre>
   <code>
@@ -76,6 +124,13 @@
     Once I got serial print to print signals working, I added bluetooth to the arduino so that the noise from the computer wouldn't interfere. I was able to get the bluetooth to connect to my website:
     arduino file to set up the serial print, python EEGserver.py in terminal to set up connection, and then using html go to the index. The website displayed the raw signal, which is easiest to see changes in, in addition to alpha/beta/delta/gamma/theta. 
     Problems arised (trying to train a model to predict eyes open versus closed & very noisy data), but we were ultimately able to see small differences and record actual data! To run 1) upload arduino, 2) run python server, 3) double click index file to bring up website page.
+
+  <ol>
+    <li>Add bluetooth to arduino: find ESP32 bluetooth settings, figure out how to connect to computer, and ID to Arduino websocket</li>
+    <li>Code Python code: make a server with proper ID that gets signals from band </li>
+    <li>Make HTML: make basic interface to see all different signals, so that when you hover you can see all bands</li>
+    <li>Testing and denoising: try Relative Power, smoothing, band pass, transmitting data at different speeds, calculating estimations, and hours worth of testing to find the best parameters for display </li>
+  </ol>
 
     <ul>
   <li><a href="sketch_may10a.ino" download>
@@ -105,6 +160,12 @@
     Finally after getting a working version via bluetooth, I miniturized by soldering the heart rate monitor, lipobattery, and ESP32 on a protoboard.
     I sewed a small pouch onto the headband, in addition to sewing rivets and the wires to be hidden. This way, the headband connects via bluetooth with no additional bulky parts.
   </p>
+
+  <ol>
+    <li>Recreate to minituraize: resolder new heart rate monitor and test with multimeter, add to breadboard with ESP32 </li>
+    <li>Battery: Test and include lipobattery for miniturization </li>
+    <li>Sew headband: Sew rivets onto headband, sew wires to be hidden, and small pouch to fit all materials </li>
+  </ol>
   
 </section> 
 
